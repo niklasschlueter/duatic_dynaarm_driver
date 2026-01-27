@@ -37,6 +37,7 @@
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/system_interface.hpp>
 #include <hardware_interface/types/hardware_interface_return_values.hpp>
+#include <hardware_interface/types/hardware_component_params.hpp>
 
 // ROS
 #include <rclcpp/macros.hpp>
@@ -44,10 +45,10 @@
 #include <rclcpp_lifecycle/state.hpp>
 
 // Urdf
-#include "dynaarm_hardware_interface_base/types.hpp"
-#include "dynaarm_hardware_interface_base/command_translator.hpp"
+#include "duatic_dynaarm_hardware_interface_base/types.hpp"
+#include "duatic_dynaarm_hardware_interface_base/command_translator.hpp"
 
-namespace dynaarm_hardware_interface_base
+namespace duatic_dynaarm_hardware_interface_base
 {
 class DynaArmHardwareInterfaceBase : public hardware_interface::SystemInterface
 {
@@ -93,11 +94,11 @@ public:
 protected:
   rclcpp::Logger logger_;
 
-  std::vector<dynaarm_hardware_interface_common::JointState> joint_state_vector_;
-  std::vector<dynaarm_hardware_interface_common::MotorState> motor_state_vector_;
+  std::vector<duatic_dynaarm_hardware_interface_common::JointState> joint_state_vector_;
+  std::vector<duatic_dynaarm_hardware_interface_common::MotorState> motor_state_vector_;
 
-  std::vector<dynaarm_hardware_interface_common::JointCommand> joint_command_vector_;
-  std::vector<dynaarm_hardware_interface_common::MotorCommand> motor_command_vector_;
+  std::vector<duatic_dynaarm_hardware_interface_common::JointCommand> joint_command_vector_;
+  std::vector<duatic_dynaarm_hardware_interface_common::MotorCommand> motor_command_vector_;
 
   double command_freeze_mode_{ 0.0 };  // do not start in freeze mode per default -> We allow overriding this via a
                                        // ros2control parameters

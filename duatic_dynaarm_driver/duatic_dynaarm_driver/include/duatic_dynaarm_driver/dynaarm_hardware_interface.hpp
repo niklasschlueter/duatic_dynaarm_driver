@@ -54,7 +54,7 @@
 #include "ethercat_sdk_master/EthercatMasterSingleton.hpp"
 #include <rsl_drive_sdk/Drive.hpp>
 
-namespace dynaarm_driver
+namespace duatic_dynaarm_driver
 {
 class DynaArmHardwareInterface : public dynaarm_hardware_interface_base::DynaArmHardwareInterfaceBase
 {

@@ -26,7 +26,7 @@
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Dense"
 
-namespace dynaarm_hardware_interface_common
+namespace duatic_dynaarm_hardware_interface_common
 {
 
 class CommandTranslator

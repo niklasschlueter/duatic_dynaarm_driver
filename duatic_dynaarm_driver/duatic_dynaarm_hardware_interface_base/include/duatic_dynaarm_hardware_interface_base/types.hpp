@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-namespace dynaarm_hardware_interface_common
+namespace duatic_dynaarm_hardware_interface_common
 {
 struct JointState
 {

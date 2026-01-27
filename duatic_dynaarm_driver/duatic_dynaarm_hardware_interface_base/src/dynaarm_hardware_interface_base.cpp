@@ -23,10 +23,10 @@
  */
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
-#include "dynaarm_hardware_interface_base/dynaarm_hardware_interface_base.hpp"
-#include "dynaarm_hardware_interface_base/string_utils.hpp"
+#include "duatic_dynaarm_hardware_interface_base/dynaarm_hardware_interface_base.hpp"
+#include "duatic_dynaarm_hardware_interface_base/string_utils.hpp"
 
-namespace dynaarm_hardware_interface_base
+namespace duatic_dynaarm_hardware_interface_base
 {
 DynaArmHardwareInterfaceBase::~DynaArmHardwareInterfaceBase()
 {
@@ -51,10 +51,10 @@ DynaArmHardwareInterfaceBase::on_init(const hardware_interface::HardwareComponen
   for (std::size_t i = 0; i < info_.joints.size(); i++) {
     const auto joint_name = info_.joints.at(i).name;
 
-    joint_state_vector_.push_back(dynaarm_hardware_interface_common::JointState{ .name = joint_name });
-    joint_command_vector_.push_back(dynaarm_hardware_interface_common::JointCommand{ .name = joint_name });
-    motor_state_vector_.push_back(dynaarm_hardware_interface_common::MotorState{ .name = joint_name });
-    motor_command_vector_.push_back(dynaarm_hardware_interface_common::MotorCommand{ .name = joint_name });
+    joint_state_vector_.push_back(duatic_dynaarm_hardware_interface_common::JointState{ .name = joint_name });
+    joint_command_vector_.push_back(duatic_dynaarm_hardware_interface_common::JointCommand{ .name = joint_name });
+    motor_state_vector_.push_back(duatic_dynaarm_hardware_interface_common::MotorState{ .name = joint_name });
+    motor_command_vector_.push_back(duatic_dynaarm_hardware_interface_common::MotorCommand{ .name = joint_name });
   }
 
   RCLCPP_INFO_STREAM(logger_, "Successfully initialized dynaarm hardware interface for DynaArmHardwareInterfaceBase");
@@ -234,20 +234,20 @@ hardware_interface::return_type DynaArmHardwareInterfaceBase::read(const rclcpp:
   }
   // Transform the joint positions using the matrix transformation
   Eigen::VectorXd joint_position =
-      dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_position);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_position);
   Eigen::VectorXd joint_velocity =
-      dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_velocity);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_velocity);
   Eigen::VectorXd joint_acceleration =
-      dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_acceleration);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_acceleration);
   Eigen::VectorXd joint_effort =
-      dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialTorques(motor_effort);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialTorques(motor_effort);
 
   Eigen::VectorXd joint_position_commanded =
-      dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_position_commanded);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_position_commanded);
   Eigen::VectorXd joint_velocity_commanded =
-      dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_velocity_commanded);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_velocity_commanded);
   Eigen::VectorXd joint_effort_commanded =
-      dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialTorques(motor_effort_commanded);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialTorques(motor_effort_commanded);
   for (std::size_t i = 0; i < info_.joints.size(); i++) {
     joint_state_vector_[i].position = joint_position[i];
     joint_state_vector_[i].velocity = joint_velocity[i];
@@ -312,11 +312,11 @@ hardware_interface::return_type DynaArmHardwareInterfaceBase::write(const rclcpp
 
   // Transform the joint positions using the matrix transformation
   Eigen::VectorXd motor_position =
-      dynaarm_hardware_interface_common::CommandTranslator::mapFromSerialToDynaarmCoordinates(joint_position);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromSerialToDynaarmCoordinates(joint_position);
   Eigen::VectorXd motor_velocity =
-      dynaarm_hardware_interface_common::CommandTranslator::mapFromSerialToDynaarmCoordinates(joint_velocity);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromSerialToDynaarmCoordinates(joint_velocity);
   Eigen::VectorXd motor_effort =
-      dynaarm_hardware_interface_common::CommandTranslator::mapFromSerialToDynaarmTorques(joint_effort);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromSerialToDynaarmTorques(joint_effort);
 
   for (std::size_t i = 0; i < info_.joints.size(); i++) {
     motor_command_vector_[i].position = motor_position[i];
