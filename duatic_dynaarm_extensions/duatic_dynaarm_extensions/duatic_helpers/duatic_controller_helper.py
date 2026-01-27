@@ -102,7 +102,9 @@ class DuaticControllerHelper:
         Returns empty string if not found or on error.
         """
         try:
-            from dynaarm_extensions.duatic_helpers.duatic_param_helper import DuaticParamHelper
+            from duatic_dynaarm_extensions.duatic_helpers.duatic_param_helper import (
+                DuaticParamHelper,
+            )
             import xml.etree.ElementTree as ET
 
             param_helper = DuaticParamHelper(self.node)

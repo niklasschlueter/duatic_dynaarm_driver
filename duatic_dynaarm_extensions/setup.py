@@ -23,7 +23,7 @@
 
 from setuptools import find_packages, setup
 
-package_name = "dynaarm_extensions"
+package_name = "duatic_dynaarm_extensions"
 
 setup(
     name=package_name,
@@ -42,8 +42,8 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "e_stop_node = dynaarm_extensions.e_stop.e_stop_node:main",
-            "move_to_predefined_position_node = dynaarm_extensions.move_to_predefined_position.move_to_predefined_position_node:main",
+            "e_stop_node = duatic_dynaarm_extensions.e_stop.e_stop_node:main",
+            "move_to_predefined_position_node = duatic_dynaarm_extensions.move_to_predefined_position.move_to_predefined_position_node:main",
         ],
     },
 )

@@ -27,7 +27,7 @@ import tempfile
 
 import numpy as np
 import pinocchio as pin
-from dynaarm_extensions.duatic_helpers.duatic_param_helper import DuaticParamHelper
+from duatic_dynaarm_extensions.duatic_helpers.duatic_param_helper import DuaticParamHelper
 
 from geometry_msgs.msg import PoseStamped
 from ament_index_python import get_package_share_directory

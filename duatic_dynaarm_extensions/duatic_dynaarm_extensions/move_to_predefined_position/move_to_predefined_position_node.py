@@ -29,11 +29,11 @@ from std_msgs.msg import Bool
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from controller_manager_msgs.srv import ListControllers, SwitchController
 
-from dynaarm_extensions.duatic_helpers.duatic_controller_helper import (
+from duatic_dynaarm_extensions.duatic_helpers.duatic_controller_helper import (
     DuaticControllerHelper,
 )
-from dynaarm_extensions.duatic_helpers.duatic_robots_helper import DuaticRobotsHelper
-from dynaarm_extensions.duatic_helpers.duatic_jtc_helper import DuaticJTCHelper
+from duatic_dynaarm_extensions.duatic_helpers.duatic_robots_helper import DuaticRobotsHelper
+from duatic_dynaarm_extensions.duatic_helpers.duatic_jtc_helper import DuaticJTCHelper
 
 
 class MoveToPredefinedPositionNode(Node):

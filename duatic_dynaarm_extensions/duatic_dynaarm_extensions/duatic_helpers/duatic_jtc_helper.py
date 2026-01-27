@@ -23,7 +23,7 @@
 
 import re
 import rclpy
-from dynaarm_extensions.duatic_helpers.duatic_param_helper import DuaticParamHelper
+from duatic_dynaarm_extensions.duatic_helpers.duatic_param_helper import DuaticParamHelper
 
 
 class DuaticJTCHelper:
