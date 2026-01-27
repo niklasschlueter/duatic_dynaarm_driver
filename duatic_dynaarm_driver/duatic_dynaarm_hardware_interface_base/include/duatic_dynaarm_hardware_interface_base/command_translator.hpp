@@ -137,4 +137,4 @@ public:
   }
 };
 
-}  // namespace dynaarm_hardware_interface_common
+}  // namespace duatic_dynaarm_hardware_interface_common

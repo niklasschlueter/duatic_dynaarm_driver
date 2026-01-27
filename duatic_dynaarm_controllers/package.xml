@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>dynaarm_controllers</name>
+  <name>duatic_dynaarm_controllers</name>
   <version>1.0.0</version>
   <description>This packages contains controllers for the dynaarm</description>
 
@@ -26,7 +26,7 @@
   <depend>generate_parameter_library</depend>
   <depend>realtime_tools</depend>
   <depend>hardware_interface</depend>
-  <depend>dynaarm_msgs</depend>
+  <depend>duatic_dynaarm_msgs</depend>
   <depend>pal_statistics_msgs</depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

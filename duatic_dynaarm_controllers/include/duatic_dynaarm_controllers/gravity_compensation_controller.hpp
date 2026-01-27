@@ -33,7 +33,7 @@
 #include <hardware_interface/loaned_command_interface.hpp>
 #include <hardware_interface/loaned_state_interface.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
-#include <dynaarm_msgs/msg/gravity_compensation_controller_status.hpp>
+#include <duatic_dynaarm_msgs/msg/gravity_compensation_controller_status.hpp>
 
 // ROS2
 #include <realtime_tools/realtime_publisher.hpp>
@@ -45,10 +45,10 @@
 #include <pinocchio/parsers/urdf.hpp>
 
 // Project
-#include <dynaarm_controllers/gravity_compensation_controller_parameters.hpp>
-#include <dynaarm_controllers/interface_utils.hpp>
+#include <duatic_dynaarm_controllers/gravity_compensation_controller_parameters.hpp>
+#include <duatic_dynaarm_controllers/interface_utils.hpp>
 
-namespace dynaarm_controllers
+namespace duatic_dynaarm_controllers
 {
 class GravityCompensationController : public controller_interface::ControllerInterface
 {
@@ -80,7 +80,7 @@ private:
   std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> joint_acceleration_state_interfaces_;
   std::atomic_bool active_{ false };
 
-  using StatusMsg = dynaarm_msgs::msg::GravityCompensationControllerStatus;
+  using StatusMsg = duatic_dynaarm_msgs::msg::GravityCompensationControllerStatus;
   using StatusMsgPublisher = realtime_tools::RealtimePublisher<StatusMsg>;
   rclcpp::Publisher<StatusMsg>::SharedPtr status_pub_;
   std::unique_ptr<StatusMsgPublisher> status_pub_rt_;
@@ -89,4 +89,4 @@ private:
   rclcpp::Time activation_time_;
   bool activation_time_set_ = false;
 };
-}  // namespace dynaarm_controllers
+}  // namespace duatic_dynaarm_controllers

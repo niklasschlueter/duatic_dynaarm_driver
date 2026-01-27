@@ -45,11 +45,11 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 // hardware interface
-#include <dynaarm_hardware_interface_base/dynaarm_hardware_interface_base.hpp>
+#include <duatic_dynaarm_hardware_interface_base/dynaarm_hardware_interface_base.hpp>
 
-namespace dynaarm_driver
+namespace duatic_dynaarm_driver
 {
-class DynaarmMockHardwareInterface : public dynaarm_hardware_interface_base::DynaArmHardwareInterfaceBase
+class DynaarmMockHardwareInterface : public duatic_dynaarm_hardware_interface_base::DynaArmHardwareInterfaceBase
 {
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(DynaarmMockHardwareInterface)
@@ -65,4 +65,4 @@ public:
   void write_motor_commands() override;
 };
 
-}  // namespace dynaarm_driver
+}  // namespace duatic_dynaarm_driver

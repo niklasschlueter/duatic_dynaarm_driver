@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(dynaarm_controllers)
+project(duatic_dynaarm_controllers)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -19,7 +19,7 @@ find_package(std_srvs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(pinocchio REQUIRED)
-find_package(dynaarm_msgs REQUIRED)
+find_package(duatic_dynaarm_msgs REQUIRED)
 find_package(pal_statistics_msgs REQUIRED)
 
 find_package(generate_parameter_library REQUIRED)
@@ -88,7 +88,7 @@ ament_target_dependencies(
   trajectory_msgs
   realtime_tools
   pinocchio
-  dynaarm_msgs
+  duatic_dynaarm_msgs
   Eigen3
   eigen3_cmake_module
   pal_statistics_msgs
@@ -123,7 +123,7 @@ ament_export_dependencies(
         rclcpp
         rclcpp_lifecycle
         hardware_interface
-        dynaarm_msgs
+        duatic_dynaarm_msgs
         moveit_core
 )
 ament_package()

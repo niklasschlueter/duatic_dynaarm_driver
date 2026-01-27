@@ -39,18 +39,18 @@
 #include <rclcpp_lifecycle/state.hpp>
 #include <rclcpp/logging.hpp>
 /*Project*/
-#include <dynaarm_controllers/dynaarm_pid_tuner_parameters.hpp>
-#include <dynaarm_controllers/interface_utils.hpp>
+#include <duatic_dynaarm_controllers/dynaarm_pid_tuner_parameters.hpp>
+#include <duatic_dynaarm_controllers/interface_utils.hpp>
 
 /*msgs*/
-#include <dynaarm_msgs/msg/pid_gains.hpp>
+#include <duatic_dynaarm_msgs/msg/pid_gains.hpp>
 
-namespace dynaarm_controllers
+namespace duatic_dynaarm_controllers
 {
 class PIDTuner : public controller_interface::ControllerInterface
 {
 public:
-  using PIDGains = dynaarm_msgs::msg::PIDGains;
+  using PIDGains = duatic_dynaarm_msgs::msg::PIDGains;
   using PIDGainsSubscription = rclcpp::Subscription<PIDGains>;
 
   PIDTuner();
@@ -88,4 +88,4 @@ private:
   std::vector<PIDGainsSubscription::SharedPtr> gain_subscriptions_;
 };
 
-}  // namespace dynaarm_controllers
+}  // namespace duatic_dynaarm_controllers

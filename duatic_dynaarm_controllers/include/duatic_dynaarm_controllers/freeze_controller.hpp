@@ -31,33 +31,23 @@
 #include <map>
 
 /*ROS2*/
-#include "realtime_tools/realtime_buffer.hpp"
-#include "realtime_tools/realtime_publisher.hpp"
 #include <controller_interface/controller_interface.hpp>
 #include <rclcpp/subscription.hpp>
 #include <rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 #include <rclcpp/logging.hpp>
 
-/*Project*/
-#include <dynaarm_controllers/dynaarm_status_broadcaster_parameters.hpp>
-#include <dynaarm_controllers/interface_utils.hpp>
+/*project*/
+#include <duatic_dynaarm_controllers/freeze_controller_parameters.hpp>
+#include <duatic_dynaarm_controllers/interface_utils.hpp>
 
-/*msgs*/
-#include <dynaarm_msgs/msg/arm_state.hpp>
-
-namespace dynaarm_controllers
+namespace duatic_dynaarm_controllers
 {
-class StatusBroadcaster : public controller_interface::ControllerInterface
+class FreezeController : public controller_interface::ControllerInterface
 {
 public:
-  // Some convenient typedef for easier handling of messages
-  using ArmState = dynaarm_msgs::msg::ArmState;
-  using ArmStatePublisher = realtime_tools::RealtimePublisher<ArmState>;
-  using DriveState = dynaarm_msgs::msg::DriveState;
-
-  StatusBroadcaster();
-  ~StatusBroadcaster() = default;
+  FreezeController();
+  ~FreezeController() = default;
 
   controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
@@ -75,24 +65,9 @@ public:
 
 private:
   // Access to controller parameters via generate_parameter_library
-  std::unique_ptr<dynaarm_status_broadcaster::ParamListener> param_listener_;
-  dynaarm_status_broadcaster::Params params_;
+  std::unique_ptr<freeze_controller::ParamListener> param_listener_;
+  freeze_controller::Params params_;
 
-  // The actual state publisher and it's realtime wrapper
-  rclcpp::Publisher<ArmState>::SharedPtr arm_state_pub_;
-  std::unique_ptr<ArmStatePublisher> arm_state_pub_rt_;
-
-  // State interface references
-  StateInterfaceReferences joint_position_interfaces_;
-  StateInterfaceReferences joint_velocity_interfaces_;
-  StateInterfaceReferences joint_effort_interfaces_;
-  StateInterfaceReferences joint_position_commanded_interfaces_;
-  StateInterfaceReferences joint_velocity_commanded_interfaces_;
-  StateInterfaceReferences joint_effort_commanded_interfaces_;
-  StateInterfaceReferences joint_temperature_system_interfaces_;
-  StateInterfaceReferences joint_temperature_phase_a_interfaces_;
-  StateInterfaceReferences joint_temperature_phase_b_interfaces_;
-  StateInterfaceReferences joint_temperature_phase_c_interfaces_;
-  StateInterfaceReferences joint_bus_voltage_interfaces_;
+  std::vector<CommandInterfaceReferences> freeze_mode_interfaces;
 };
-}  // namespace dynaarm_controllers
+}  // namespace duatic_dynaarm_controllers

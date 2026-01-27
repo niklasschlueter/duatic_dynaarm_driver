@@ -22,10 +22,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "dynaarm_driver/dynaarm_mock_hardware_interface.hpp"
+#include "duatic_dynaarm_driver/dynaarm_mock_hardware_interface.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
-namespace dynaarm_driver
+namespace duatic_dynaarm_driver
 {
 hardware_interface::CallbackReturn
 DynaarmMockHardwareInterface::on_init_derived(const hardware_interface::HardwareInfo& /*system_info*/)
@@ -114,8 +114,8 @@ DynaarmMockHardwareInterface::~DynaarmMockHardwareInterface()
   RCLCPP_INFO_STREAM(logger_, "Destroy DynaarmMockHardwareInterface");
 }
 
-}  // namespace dynaarm_driver
+}  // namespace duatic_dynaarm_driver
 
 #include "pluginlib/class_list_macros.hpp"
 
-PLUGINLIB_EXPORT_CLASS(dynaarm_driver::DynaarmMockHardwareInterface, hardware_interface::SystemInterface)
+PLUGINLIB_EXPORT_CLASS(duatic_dynaarm_driver::DynaarmMockHardwareInterface, hardware_interface::SystemInterface)

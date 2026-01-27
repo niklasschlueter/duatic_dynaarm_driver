@@ -38,16 +38,16 @@
 #include <rclcpp/logging.hpp>
 
 /*project*/
-#include <dynaarm_controllers/freeze_controller_parameters.hpp>
-#include <dynaarm_controllers/interface_utils.hpp>
+#include <duatic_dynaarm_controllers/freedrive_controller_parameters.hpp>
+#include <duatic_dynaarm_controllers/interface_utils.hpp>
 
-namespace dynaarm_controllers
+namespace duatic_dynaarm_controllers
 {
-class FreezeController : public controller_interface::ControllerInterface
+class FreeDriveController : public controller_interface::ControllerInterface
 {
 public:
-  FreezeController();
-  ~FreezeController() = default;
+  FreeDriveController();
+  ~FreeDriveController() = default;
 
   controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
@@ -64,10 +64,26 @@ public:
   controller_interface::return_type update(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 
 private:
-  // Access to controller parameters via generate_parameter_library
-  std::unique_ptr<freeze_controller::ParamListener> param_listener_;
-  freeze_controller::Params params_;
+  struct Gains
+  {
+    double p;
+    double i;
+    double d;
+  };
 
-  std::vector<CommandInterfaceReferences> freeze_mode_interfaces;
+  // Access to controller parameters via generate_parameter_library
+  std::unique_ptr<freedrive_controller::ParamListener> param_listener_;
+  freedrive_controller::Params params_;
+
+  CommandInterfaceReferences joint_position_command_interfaces_;
+
+  CommandInterfaceReferences joint_p_gain_command_interfaces_;
+  CommandInterfaceReferences joint_i_gain_command_interfaces_;
+  CommandInterfaceReferences joint_d_gain_command_interfaces_;
+  StateInterfaceReferences joint_position_state_interfaces_;
+
+  std::vector<Gains> previous_gains_;
+
+  std::atomic_bool active_{ false };
 };
-}  // namespace dynaarm_controllers
+}  // namespace duatic_dynaarm_controllers

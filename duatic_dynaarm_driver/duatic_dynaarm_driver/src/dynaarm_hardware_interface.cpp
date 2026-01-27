@@ -23,10 +23,10 @@
  */
 
 #include <filesystem>
-#include "dynaarm_driver/dynaarm_hardware_interface.hpp"
+#include "duatic_dynaarm_driver/dynaarm_hardware_interface.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "ethercat_sdk_master/EthercatMasterSingleton.hpp"
-namespace dynaarm_driver
+namespace duatic_dynaarm_driver
 {
 
 static void print_drive_status_changes(
@@ -281,8 +281,8 @@ DynaArmHardwareInterface::~DynaArmHardwareInterface()
   ecat_master::EthercatMasterSingleton::instance().releaseMaster(ecat_master_handle_);
   ecat_master_handle_.ecat_master.reset();
 }
-}  // namespace dynaarm_driver
+}  // namespace duatic_dynaarm_driver
 
 #include "pluginlib/class_list_macros.hpp"
 
-PLUGINLIB_EXPORT_CLASS(dynaarm_driver::DynaArmHardwareInterface, hardware_interface::SystemInterface)
+PLUGINLIB_EXPORT_CLASS(duatic_dynaarm_driver::DynaArmHardwareInterface, hardware_interface::SystemInterface)

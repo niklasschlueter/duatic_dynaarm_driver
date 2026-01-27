@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(dynaarm_driver)
+project(duatic_dynaarm_driver)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,7 +18,7 @@ set(PACKAGE_DEPENDENCIES
   pluginlib
   hardware_interface
   urdf
-  dynaarm_hardware_interface_base
+  duatic_dynaarm_hardware_interface_base
   ethercat_sdk_master
   rsl_drive_sdk
 )

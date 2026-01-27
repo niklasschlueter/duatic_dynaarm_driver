@@ -48,7 +48,7 @@
 #include <hardware_interface/loaned_command_interface.hpp>
 #include <hardware_interface/loaned_state_interface.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
-#include <dynaarm_msgs/msg/gravity_compensation_controller_status.hpp>
+#include <duatic_dynaarm_msgs/msg/gravity_compensation_controller_status.hpp>
 #include "controller_interface/chainable_controller_interface.hpp"
 
 // ROS2
@@ -57,10 +57,10 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 // Project
-#include <dynaarm_controllers/cartesian_pose_controller_parameters.hpp>
-#include <dynaarm_controllers/interface_utils.hpp>
+#include <duatic_dynaarm_controllers/cartesian_pose_controller_parameters.hpp>
+#include <duatic_dynaarm_controllers/interface_utils.hpp>
 
-namespace dynaarm_controllers
+namespace duatic_dynaarm_controllers
 {
 class CartesianPoseController : public controller_interface::ControllerInterface
 {
@@ -113,4 +113,4 @@ private:
   // IK worker main
   void ikWorkerMain();
 };
-}  // namespace dynaarm_controllers
+}  // namespace duatic_dynaarm_controllers

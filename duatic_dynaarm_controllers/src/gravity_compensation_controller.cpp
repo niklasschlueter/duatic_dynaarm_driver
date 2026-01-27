@@ -24,13 +24,13 @@
 
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 
-#include <dynaarm_controllers/gravity_compensation_controller.hpp>
+#include <duatic_dynaarm_controllers/gravity_compensation_controller.hpp>
 
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <controller_interface/helpers.hpp>
 #include <lifecycle_msgs/msg/state.hpp>
 
-namespace dynaarm_controllers
+namespace duatic_dynaarm_controllers
 {
 
 GravityCompensationController::GravityCompensationController() : controller_interface::ControllerInterface()
@@ -289,8 +289,9 @@ GravityCompensationController::on_shutdown([[maybe_unused]] const rclcpp_lifecyc
 {
   return controller_interface::CallbackReturn::SUCCESS;
 }
-}  // namespace dynaarm_controllers
+}  // namespace duatic_dynaarm_controllers
 
 #include "pluginlib/class_list_macros.hpp"
 // NOLINTNEXTLINE
-PLUGINLIB_EXPORT_CLASS(dynaarm_controllers::GravityCompensationController, controller_interface::ControllerInterface)
+PLUGINLIB_EXPORT_CLASS(duatic_dynaarm_controllers::GravityCompensationController,
+                       controller_interface::ControllerInterface)

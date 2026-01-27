@@ -24,7 +24,7 @@
 
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 
-#include <dynaarm_controllers/cartesian_pose_controller.hpp>
+#include <duatic_dynaarm_controllers/cartesian_pose_controller.hpp>
 
 // C++ system headers
 #include <thread>
@@ -46,7 +46,7 @@
 
 #include <pluginlib/class_list_macros.hpp>
 
-namespace dynaarm_controllers
+namespace duatic_dynaarm_controllers
 {
 
 bool computeIK(const pinocchio::Model& model, pinocchio::Data& data, const pinocchio::SE3& target_pose,
@@ -672,7 +672,7 @@ CartesianPoseController::on_shutdown([[maybe_unused]] const rclcpp_lifecycle::St
 {
   return controller_interface::CallbackReturn::SUCCESS;
 }
-}  // namespace dynaarm_controllers
+}  // namespace duatic_dynaarm_controllers
 
 // NOLINTNEXTLINE
-PLUGINLIB_EXPORT_CLASS(dynaarm_controllers::CartesianPoseController, controller_interface::ControllerInterface)
+PLUGINLIB_EXPORT_CLASS(duatic_dynaarm_controllers::CartesianPoseController, controller_interface::ControllerInterface)

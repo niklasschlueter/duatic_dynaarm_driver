@@ -238,16 +238,20 @@ hardware_interface::return_type DynaArmHardwareInterfaceBase::read(const rclcpp:
   Eigen::VectorXd joint_velocity =
       duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_velocity);
   Eigen::VectorXd joint_acceleration =
-      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_acceleration);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(
+          motor_acceleration);
   Eigen::VectorXd joint_effort =
       duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialTorques(motor_effort);
 
   Eigen::VectorXd joint_position_commanded =
-      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_position_commanded);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(
+          motor_position_commanded);
   Eigen::VectorXd joint_velocity_commanded =
-      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(motor_velocity_commanded);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialCoordinates(
+          motor_velocity_commanded);
   Eigen::VectorXd joint_effort_commanded =
-      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialTorques(motor_effort_commanded);
+      duatic_dynaarm_hardware_interface_common::CommandTranslator::mapFromDynaarmToSerialTorques(
+          motor_effort_commanded);
   for (std::size_t i = 0; i < info_.joints.size(); i++) {
     joint_state_vector_[i].position = joint_position[i];
     joint_state_vector_[i].velocity = joint_velocity[i];
@@ -347,4 +351,4 @@ hardware_interface::return_type DynaArmHardwareInterfaceBase::perform_command_mo
   return hardware_interface::return_type::OK;
 }
 
-}  // namespace dynaarm_hardware_interface_base
+}  // namespace duatic_dynaarm_hardware_interface_base

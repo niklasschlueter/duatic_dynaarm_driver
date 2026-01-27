@@ -22,13 +22,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <dynaarm_controllers/dynaarm_status_broadcaster.hpp>
+#include <duatic_dynaarm_controllers/dynaarm_status_broadcaster.hpp>
 
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <controller_interface/helpers.hpp>
 #include <lifecycle_msgs/msg/state.hpp>
 
-namespace dynaarm_controllers
+namespace duatic_dynaarm_controllers
 {
 
 StatusBroadcaster::StatusBroadcaster()
@@ -230,8 +230,8 @@ controller_interface::return_type StatusBroadcaster::update(const rclcpp::Time& 
   }
   return controller_interface::return_type::OK;
 }
-}  // namespace dynaarm_controllers
+}  // namespace duatic_dynaarm_controllers
 
 #include "pluginlib/class_list_macros.hpp"
 
-PLUGINLIB_EXPORT_CLASS(dynaarm_controllers::StatusBroadcaster, controller_interface::ControllerInterface)
+PLUGINLIB_EXPORT_CLASS(duatic_dynaarm_controllers::StatusBroadcaster, controller_interface::ControllerInterface)
