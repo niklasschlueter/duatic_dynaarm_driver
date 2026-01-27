@@ -2,7 +2,7 @@ repositories:
   dynaarm_description:
     type: git
     url: https://github.com/Duatic/dynaarm_description.git
-    version: main
+    version: rename
   duatic_control:
     type: git
     url: https://github.com/Duatic/duatic_control.git
