@@ -37,12 +37,22 @@ class DuaticRobotsHelper:
         self._robot = {}
         self._robot_count = 0
 
+        self._end_effector_keywords = (
+            "finger",
+            "gripper",
+            "claw",
+            "tool",
+            "effector",
+            "hand",
+            "pinch",
+        )
+
         self._joint_states_subscription = self.node.create_subscription(
-            JointState, "/joint_states", self._joint_sate_callback, 10
+            JointState, "joint_states", self._joint_sate_callback, 10
         )
 
         self.hardware_components_client = self.node.create_client(
-            ListHardwareComponents, "/controller_manager/list_hardware_components"
+            ListHardwareComponents, "controller_manager/list_hardware_components"
         )
 
     def _joint_sate_callback(self, msg):
@@ -124,8 +134,8 @@ class DuaticRobotsHelper:
             if prefix.startswith("arm_"):
                 return "robot_0", prefix, "arm"
 
-        # Pattern 2: hip_joint_pitch_joint, hip_joint_yaw_joint
-        elif "hip_joint" in joint_name:
+        # Pattern 2: hip_pitch, hip_roll
+        elif "hip" in joint_name:
             return "robot_0", "hip_0", "hip"
 
         # Pattern 3: joint_wheel1, joint_wheel2, joint_wheel3, joint_wheel4
@@ -135,6 +145,10 @@ class DuaticRobotsHelper:
         # Pattern 4: head_pan, head_tilt
         elif joint_name.startswith("head_"):
             return "robot_0", "head_0", "head"
+
+        # Pattern 5: finger or gripper joints (e.g., zimmer_finger_left, gripper_joint)
+        elif any(keyword in joint_name for keyword in self._end_effector_keywords):
+            return "robot_0", "end_effector_0", "end_effector"
 
         # Default: treat as miscellaneous component
         return "robot_0", "", "arm"
