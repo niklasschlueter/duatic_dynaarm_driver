@@ -242,7 +242,7 @@ controller_interface::return_type ForceTorqueBroadcaster::update([[maybe_unused]
   forwardKinematics(pinocchio_model_, pinocchio_data_, q, v, a);
   const auto tau = pinocchio::rnea(pinocchio_model_, pinocchio_data_, q, v, a);
   // These are the actual external torques
-  Eigen::VectorXd tau_ext = tau - torque_meas;
+  Eigen::VectorXd tau_ext = torque_meas - tau;
 
   pinocchio::computeJointJacobians(pinocchio_model_, pinocchio_data_, q);
   pinocchio::updateFramePlacements(pinocchio_model_, pinocchio_data_);
@@ -252,10 +252,13 @@ controller_interface::return_type ForceTorqueBroadcaster::update([[maybe_unused]
 
   // Solve for wrench: F = (J^T)^+ * tau_ext
   double lambda = 1e-4;  // Regularization parameter (tune this)
-  Eigen::MatrixXd J_reg = J.transpose();
+  /*Eigen::MatrixXd J_reg = J.transpose();
   J_reg.diagonal().array() += lambda;
   Eigen::BDCSVD<Eigen::MatrixXd> svd(J_reg, Eigen::ComputeThinU | Eigen::ComputeThinV);
-  Eigen::VectorXd wrench = svd.solve(tau_ext);
+  Eigen::VectorXd wrench = svd.solve(tau_ext);*/
+  Eigen::Matrix<double, 6, 6> A = J * J.transpose() + lambda * Eigen::Matrix<double, 6, 6>::Identity();
+
+  Eigen::VectorXd wrench = A.ldlt().solve(J * tau_ext);
 
   // Publish the wrench as wrench stamped
 
