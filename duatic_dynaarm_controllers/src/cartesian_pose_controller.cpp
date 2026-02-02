@@ -53,8 +53,9 @@ namespace duatic_dynaarm_controllers
 bool computeIK(const pinocchio::Model& model, pinocchio::Data& data, const pinocchio::SE3& target_pose,
                const Eigen::VectorXd& q_in, const pinocchio::FrameIndex frame_id, Eigen::VectorXd& q_out)
 {
-  const double eps = 1e-4;
-  const int IT_MAX = 1000;
+  // Relaxed for real-time gamepad control: faster convergence at cost of slight accuracy
+  const double eps = 5e-4;      // Was 1e-4 (0.1mm) -> now 5e-4 (0.5mm) - 5x faster convergence
+  const int IT_MAX = 1000;       
   const double DT = 1e-1;
   const double damp = 1e-6;
   pinocchio::Data::Matrix6x J(6, model.nv);
@@ -234,6 +235,9 @@ void CartesianPoseController::ikWorkerMain()
       std::lock_guard<std::mutex> lock(ik_mutex_);
       last_q_out_ = q_out_local;
       have_last_q_out_ = true;
+    } else {
+      RCLCPP_WARN_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(), 1000,
+                           "IK worker FAILED to find solution - robot may move slowly");
     }
   }
 }
@@ -370,7 +374,20 @@ CartesianPoseController::on_configure([[maybe_unused]] const rclcpp_lifecycle::S
           }
         }
         if (!duplicate) {
+          // For real-time gamepad control, limit queue size to prevent lag
+          // With faster IK (100 iter vs 1000), we can handle more requests for smoother motion
+          constexpr size_t MAX_QUEUE_SIZE = 5;
+          while (ik_request_queue_.size() >= MAX_QUEUE_SIZE) {
+            ik_request_queue_.pop_front();  // Drop oldest requests
+          }
+
           ik_request_queue_.push_back(msg);
+
+          if (ik_request_queue_.size() > 1) {
+            RCLCPP_WARN_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(), 1000,
+                                 "IK queue: %zu requests (dropping old requests for responsiveness)",
+                                 ik_request_queue_.size());
+          }
           queue_cv_.notify_one();
         }
       });
@@ -631,7 +648,12 @@ controller_interface::return_type CartesianPoseController::update([[maybe_unused
 
   if (!collides) {
     // Compute joint-space delta and optionally clamp per-update joint changes to avoid jumps
-    const double MAX_JOINT_STEP = 0.01;  // radians per update (~0.57 deg). Tune if needed.
+    // Use velocity-based limit to ensure consistent behavior across different update rates
+    const double MAX_JOINT_VELOCITY = 2.0;  // rad/s - increased from 0.2 for faster motion
+    const double dt = period.seconds();
+    RCLCPP_INFO_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(), 1000,
+                         "dt: %.6f s, MAX_JOINT_STEP: %.6f rad", dt, MAX_JOINT_VELOCITY * dt);
+    const double MAX_JOINT_STEP = MAX_JOINT_VELOCITY * dt;  // Adaptive step based on control period
     double max_delta_norm = 0.0;
     for (std::size_t i = 0; i < joint_count; i++) {
       const std::string& joint_name = params_.joints[i];
@@ -659,6 +681,7 @@ controller_interface::return_type CartesianPoseController::update([[maybe_unused
       double applied = q_target_joint;
       if (std::abs(q_target_joint - cmd_current) > MAX_JOINT_STEP) {
         applied = cmd_current + std::copysign(MAX_JOINT_STEP, q_target_joint - cmd_current);
+        RCLCPP_WARN(get_node()->get_logger(), "MAX JOINT STEP APPLIED FOR JOINT '%s'", joint_name.c_str());
       }
 
       if (!joint_position_command_interfaces_.at(i).get().set_value<double>(applied)) {

@@ -135,20 +135,27 @@ class DuaticJTCHelper:
         # Construct the search pattern
         namespace = self.node.get_namespace().strip("/")
         if namespace:
-            search_pattern = f"/{namespace}/{controller_name}*/{identifier}"
+            search_pattern = f"/{namespace}/{controller_name}/{identifier}"
         else:
-            search_pattern = f"/{controller_name}*/{identifier}"
+            search_pattern = f"/{controller_name}/{identifier}"
 
         # Find all topics matching the controller name and identifier
         while retry_count < max_retries:
             all_matched_topics = self.get_topic_names_and_types_function(search_pattern)
 
-            # Filter topics to only include those with the component_names in their controller namespace
-            found_topics = [
-                (topic, types)
-                for topic, types in all_matched_topics
-                if any(f"_{component_name}/" in topic for component_name in component_names)
-            ]
+            # Check if component_names only contains empty strings (single arm without suffix)
+            has_valid_component_names = any(name.strip() for name in component_names)
+
+            if has_valid_component_names:
+                # Filter topics to only include those with the component_names in their controller namespace
+                found_topics = [
+                    (topic, types)
+                    for topic, types in all_matched_topics
+                    if any(f"_{component_name}/" in topic for component_name in component_names)
+                ]
+            else:
+                # No valid component names (single arm case) - use all matched topics
+                found_topics = all_matched_topics
 
             if len(found_topics) >= len(component_names):
                 break
