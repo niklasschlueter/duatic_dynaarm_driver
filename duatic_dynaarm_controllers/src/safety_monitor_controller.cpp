@@ -59,10 +59,18 @@ controller_interface::InterfaceConfiguration SafetyMonitorController::state_inte
     config.names.emplace_back(joint + "/" + hardware_interface::HW_IF_POSITION);
   }
 
-  // Optionally claim velocity interfaces if velocity checking is enabled
-  if (params_.check_velocity) {
+  // Claim velocity interfaces if velocity checking or external torque monitoring is enabled
+  if (params_.check_velocity || params_.check_external_torque) {
     for (const auto& joint : joints) {
       config.names.emplace_back(joint + "/" + hardware_interface::HW_IF_VELOCITY);
+    }
+  }
+
+  // Claim effort and acceleration interfaces if external torque monitoring is enabled
+  if (params_.check_external_torque) {
+    for (const auto& joint : joints) {
+      config.names.emplace_back(joint + "/" + hardware_interface::HW_IF_EFFORT);
+      config.names.emplace_back(joint + "/acceleration_commanded");
     }
   }
 
@@ -105,8 +113,19 @@ SafetyMonitorController::on_configure(const rclcpp_lifecycle::State& /*previous_
     return controller_interface::CallbackReturn::FAILURE;
   }
 
+  // Validate external torque parameters
+  // Treat single-element [0.0] array as "use single threshold" (same as empty)
+  const bool use_per_joint_thresholds = params_.check_external_torque &&
+                                         params_.external_torque_thresholds.size() > 1;
+  if (use_per_joint_thresholds && params_.external_torque_thresholds.size() != num_joints) {
+    RCLCPP_ERROR(get_node()->get_logger(),
+                 "check_external_torque is enabled but external_torque_thresholds size (%zu) does not match joints size (%zu)",
+                 params_.external_torque_thresholds.size(), num_joints);
+    return controller_interface::CallbackReturn::FAILURE;
+  }
+
   // Load Pinocchio model to read joint limits from URDF
-  if (params_.check_joint_limits || params_.check_workspace) {
+  if (params_.check_joint_limits || params_.check_workspace || params_.check_external_torque) {
     try {
       pinocchio::urdf::buildModelFromXML(get_robot_description(), pinocchio_model_);
       pinocchio_data_ = pinocchio::Data(pinocchio_model_);
@@ -170,6 +189,18 @@ SafetyMonitorController::on_configure(const rclcpp_lifecycle::State& /*previous_
                 params_.end_effector_frame.c_str(), ee_frame_id_);
   }
 
+  // Initialize torque residual filtering buffers
+  if (params_.check_external_torque) {
+    torque_residual_history_.resize(num_joints);
+    filtered_torque_residuals_.resize(num_joints, 0.0);
+    for (auto& history : torque_residual_history_) {
+      history.clear();
+    }
+    RCLCPP_INFO(get_node()->get_logger(),
+                "External torque monitoring enabled with filter window size: %d",
+                params_.torque_residual_filter_window);
+  }
+
   RCLCPP_INFO(get_node()->get_logger(),
               "Safety Monitor configured for %zu joints. Freeze controller: '%s'",
               num_joints, params_.freeze_controller_name.c_str());
@@ -183,6 +214,8 @@ SafetyMonitorController::on_activate(const rclcpp_lifecycle::State& /*previous_s
   // Clear interface vectors
   joint_position_state_interfaces_.clear();
   joint_velocity_state_interfaces_.clear();
+  joint_effort_state_interfaces_.clear();
+  joint_acceleration_state_interfaces_.clear();
 
   // Get ordered position interfaces
   if (!controller_interface::get_ordered_interfaces(
@@ -193,11 +226,28 @@ SafetyMonitorController::on_activate(const rclcpp_lifecycle::State& /*previous_s
   }
 
   // Get ordered velocity interfaces if checking is enabled
-  if (params_.check_velocity) {
+  if (params_.check_velocity || params_.check_external_torque) {
     if (!controller_interface::get_ordered_interfaces(
             state_interfaces_, params_.joints, hardware_interface::HW_IF_VELOCITY,
             joint_velocity_state_interfaces_)) {
       RCLCPP_ERROR(get_node()->get_logger(), "Could not get ordered velocity state interfaces");
+      return controller_interface::CallbackReturn::FAILURE;
+    }
+  }
+
+  // Get ordered effort and acceleration interfaces if external torque monitoring is enabled
+  if (params_.check_external_torque) {
+    if (!controller_interface::get_ordered_interfaces(
+            state_interfaces_, params_.joints, hardware_interface::HW_IF_EFFORT,
+            joint_effort_state_interfaces_)) {
+      RCLCPP_ERROR(get_node()->get_logger(), "Could not get ordered effort state interfaces");
+      return controller_interface::CallbackReturn::FAILURE;
+    }
+
+    if (!controller_interface::get_ordered_interfaces(
+            state_interfaces_, params_.joints, "acceleration_commanded",
+            joint_acceleration_state_interfaces_)) {
+      RCLCPP_ERROR(get_node()->get_logger(), "Could not get ordered acceleration state interfaces");
       return controller_interface::CallbackReturn::FAILURE;
     }
   }
@@ -228,17 +278,18 @@ controller_interface::return_type SafetyMonitorController::update(const rclcpp::
   bool position_violation = check_position_limits();
   bool velocity_violation = params_.check_velocity ? check_velocity_limits() : false;
   bool workspace_violation = params_.check_workspace ? check_workspace_limits() : false;
+  bool external_torque_violation = params_.check_external_torque ? check_external_torque() : false;
 
   // If we have any violation, trigger freeze
   // We check freeze_triggered_ and service_call_in_progress_ to avoid spamming service calls
-  if ((position_violation || velocity_violation || workspace_violation) &&
+  if ((position_violation || velocity_violation || workspace_violation || external_torque_violation) &&
       !freeze_triggered_ && !service_call_in_progress_) {
     trigger_freeze(last_violation_reason_);
   }
 
   // If no violation and freeze was triggered by us, allow retriggering
   // This allows the safety monitor to retrigger after user manually unfreezes
-  if (!position_violation && !velocity_violation && !workspace_violation && freeze_triggered_) {
+  if (!position_violation && !velocity_violation && !workspace_violation && !external_torque_violation && freeze_triggered_) {
     freeze_triggered_ = false;
     RCLCPP_INFO_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(), 1000,
                         "Safety conditions now satisfied - ready to monitor again");
@@ -414,6 +465,116 @@ bool SafetyMonitorController::check_workspace_limits()
     RCLCPP_ERROR_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(), 1000,
                          "WORKSPACE VIOLATION: %s", last_violation_reason_.c_str());
     return true;
+  }
+
+  return false;
+}
+
+bool SafetyMonitorController::check_external_torque()
+{
+  if (!params_.check_external_torque) {
+    return false;
+  }
+
+  const size_t num_joints = joint_position_state_interfaces_.size();
+
+  // Build q, v, a vectors for Pinocchio RNEA
+  Eigen::VectorXd q = Eigen::VectorXd::Zero(pinocchio_model_.nq);
+  Eigen::VectorXd v = Eigen::VectorXd::Zero(pinocchio_model_.nv);
+  Eigen::VectorXd a = Eigen::VectorXd::Zero(pinocchio_model_.nv);
+
+  for (size_t i = 0; i < num_joints; ++i) {
+    double position, velocity, acceleration;
+    try {
+      position = duatic_dynaarm_controllers::compat::require_value(joint_position_state_interfaces_[i].get());
+      velocity = duatic_dynaarm_controllers::compat::require_value(joint_velocity_state_interfaces_[i].get());
+      acceleration = duatic_dynaarm_controllers::compat::require_value(joint_acceleration_state_interfaces_[i].get());
+    } catch (const duatic_dynaarm_controllers::exceptions::MissingInterfaceValue& e) {
+      RCLCPP_ERROR_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(), 1000,
+                           "Failed to read state for joint '%s': %s",
+                           params_.joints[i].c_str(), e.what());
+      return false;
+    }
+
+    // Map joint to pinocchio model index
+    const std::string& joint_name = params_.joints[i];
+    auto joint_id = pinocchio_model_.getJointId(joint_name);
+    if (joint_id == 0) {
+      RCLCPP_ERROR_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(), 1000,
+                           "Joint '%s' not found in Pinocchio model.", joint_name.c_str());
+      return false;
+    }
+
+    const int idx_q = pinocchio_model_.joints[joint_id].idx_q();
+    const int idx_v = pinocchio_model_.joints[joint_id].idx_v();
+
+    q[idx_q] = position;
+    v[idx_v] = velocity;
+    a[idx_v] = acceleration;
+  }
+
+  // Compute expected torque using RNEA: tau = M(q)a + C(q,v)v + g(q)
+  pinocchio::forwardKinematics(pinocchio_model_, pinocchio_data_, q, v, a);
+  const Eigen::VectorXd tau_expected = pinocchio::rnea(pinocchio_model_, pinocchio_data_, q, v, a);
+
+  // Check residuals for each joint
+  for (size_t i = 0; i < num_joints; ++i) {
+    double tau_measured;
+    try {
+      tau_measured = duatic_dynaarm_controllers::compat::require_value(joint_effort_state_interfaces_[i].get());
+    } catch (const duatic_dynaarm_controllers::exceptions::MissingInterfaceValue& e) {
+      RCLCPP_ERROR_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(), 1000,
+                           "Failed to read effort for joint '%s': %s",
+                           params_.joints[i].c_str(), e.what());
+      return false;
+    }
+
+    // Get expected torque for this joint
+    const std::string& joint_name = params_.joints[i];
+    auto joint_id = pinocchio_model_.getJointId(joint_name);
+    const int idx_v = pinocchio_model_.joints[joint_id].idx_v();
+    double tau_exp = tau_expected[idx_v];
+
+    // Compute residual
+    double residual = std::abs(tau_measured - tau_exp);
+
+    // Apply moving average filter
+    torque_residual_history_[i].push_back(residual);
+    if (static_cast<int>(torque_residual_history_[i].size()) > params_.torque_residual_filter_window) {
+      torque_residual_history_[i].pop_front();
+    }
+
+    // Compute filtered residual (average)
+    double sum = 0.0;
+    for (const auto& val : torque_residual_history_[i]) {
+      sum += val;
+    }
+    double filtered_residual = torque_residual_history_[i].empty() ? 0.0 : sum / torque_residual_history_[i].size();
+    filtered_torque_residuals_[i] = filtered_residual;
+
+    // Get threshold for this joint
+    // Use single threshold if array has <= 1 elements (including default [0.0])
+    double threshold = (params_.external_torque_thresholds.size() > 1)
+                        ? params_.external_torque_thresholds[i]
+                        : params_.external_torque_threshold_single;
+
+    // Debug logging: print torque values periodically
+    RCLCPP_INFO_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(), 500,
+                         "Joint %zu (%s): τ_measured=%.3f Nm, τ_expected=%.3f Nm, residual=%.3f Nm (filtered=%.3f Nm), threshold=%.3f Nm",
+                         i, params_.joints[i].c_str(), tau_measured, tau_exp, residual, filtered_residual, threshold);
+
+    // Check if collision detected
+    if (filtered_residual > threshold) {
+      last_violation_reason_ = "External torque detected on joint " + std::to_string(i) +
+                              " (" + params_.joints[i] + "): residual " +
+                              std::to_string(filtered_residual) + " Nm exceeds threshold " +
+                              std::to_string(threshold) + " Nm (measured: " +
+                              std::to_string(tau_measured) + " Nm, expected: " +
+                              std::to_string(tau_exp) + " Nm)";
+      RCLCPP_ERROR_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(), 1000,
+                           "COLLISION DETECTED: %s", last_violation_reason_.c_str());
+      return true;
+    }
   }
 
   return false;

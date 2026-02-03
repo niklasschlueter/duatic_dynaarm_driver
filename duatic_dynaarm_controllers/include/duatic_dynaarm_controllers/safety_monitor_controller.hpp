@@ -52,6 +52,10 @@
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/data.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
+#include <pinocchio/algorithm/rnea.hpp>
+
+// std
+#include <deque>
 
 namespace duatic_dynaarm_controllers
 {
@@ -84,6 +88,8 @@ private:
   // State interfaces
   StateInterfaceReferences joint_position_state_interfaces_;
   StateInterfaceReferences joint_velocity_state_interfaces_;
+  StateInterfaceReferences joint_effort_state_interfaces_;        // Measured torque
+  StateInterfaceReferences joint_acceleration_state_interfaces_;  // For RNEA
 
   // Service client for activating freeze controller
   rclcpp::Client<controller_manager_msgs::srv::SwitchController>::SharedPtr switch_controller_client_;
@@ -109,10 +115,15 @@ private:
   std::vector<double> joint_lower_limits_;
   std::vector<double> joint_upper_limits_;
 
+  // External torque monitoring (collision detection)
+  std::vector<std::deque<double>> torque_residual_history_;  // Moving average filter
+  std::vector<double> filtered_torque_residuals_;
+
   // Helper methods
   bool check_position_limits();
   bool check_velocity_limits();
   bool check_workspace_limits();
+  bool check_external_torque();
   void trigger_freeze(const std::string& reason);
   void publish_status(const rclcpp::Time& time);
 };

@@ -79,3 +79,24 @@ safety_monitor_controller:
     type: double
     default_value: 2.0
     description: "Maximum allowed Z position (m) in base frame"
+
+  # External torque monitoring (collision detection)
+  check_external_torque:
+    type: bool
+    default_value: false
+    description: "Enable external torque monitoring for collision detection via model-based residual"
+
+  external_torque_thresholds:
+    type: double_array
+    default_value: [0.0]
+    description: "Torque residual thresholds (Nm) per joint for collision detection. Single element [0.0] or empty = use single threshold for all joints."
+
+  external_torque_threshold_single:
+    type: double
+    default_value: 10.0
+    description: "Single torque residual threshold (Nm) applied to all joints if external_torque_thresholds is empty"
+
+  torque_residual_filter_window:
+    type: int
+    default_value: 10
+    description: "Moving average window size for torque residual filtering to reduce noise"
