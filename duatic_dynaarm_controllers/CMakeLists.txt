@@ -13,6 +13,7 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(trajectory_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(realtime_tools REQUIRED)
 
 find_package(std_srvs REQUIRED)
@@ -21,6 +22,7 @@ find_package(eigen3_cmake_module REQUIRED)
 find_package(pinocchio REQUIRED)
 find_package(duatic_dynaarm_msgs REQUIRED)
 find_package(pal_statistics_msgs REQUIRED)
+find_package(controller_manager_msgs REQUIRED)
 
 find_package(generate_parameter_library REQUIRED)
 generate_parameter_library(
@@ -53,6 +55,11 @@ generate_parameter_library(
   src/cartesian_pose_controller_parameters.yaml
 )
 
+generate_parameter_library(
+  safety_monitor_controller_parameters
+  src/safety_monitor_controller_parameters.yaml
+)
+
 add_library(${PROJECT_NAME} SHARED
   src/gravity_compensation_controller.cpp
   src/dynaarm_status_broadcaster.cpp
@@ -60,6 +67,7 @@ add_library(${PROJECT_NAME} SHARED
   src/dynaarm_pid_tuner.cpp
   src/freeze_controller.cpp
   src/cartesian_pose_controller.cpp
+  src/safety_monitor_controller.cpp
 )
 
 target_include_directories(
@@ -75,6 +83,7 @@ target_link_libraries(${PROJECT_NAME}
   dynaarm_pid_tuner_parameters
   freeze_controller_parameters
   cartesian_pose_controller_parameters
+  safety_monitor_controller_parameters
   pinocchio::pinocchio
 )
 
@@ -86,6 +95,7 @@ ament_target_dependencies(
   rclcpp
   rclcpp_lifecycle
   trajectory_msgs
+  std_msgs
   realtime_tools
   pinocchio
   duatic_dynaarm_msgs
@@ -93,6 +103,7 @@ ament_target_dependencies(
   eigen3_cmake_module
   pal_statistics_msgs
   std_srvs
+  controller_manager_msgs
 )
 # prevent pluginlib from using boost
 target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")

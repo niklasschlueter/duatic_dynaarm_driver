@@ -1,0 +1,81 @@
+safety_monitor_controller:
+  joints:
+    type: string_array
+    default_value: []
+    description: "Names of joints to monitor for safety violations"
+
+  check_joint_limits:
+    type: bool
+    default_value: true
+    description: "Enable joint position limit checking (limits read from URDF)"
+
+  joint_limit_tolerance:
+    type: double
+    default_value: 0.1
+    description: "Tolerance (rad) applied to URDF joint limits for safety margin"
+
+  max_joint_velocities:
+    type: double_array
+    default_value: []
+    description: "Maximum allowed joint velocities (rad/s). Empty array disables velocity checking."
+
+  check_velocity:
+    type: bool
+    default_value: false
+    description: "Enable velocity limit checking"
+
+  freeze_controller_name:
+    type: string
+    default_value: "freeze_controller"
+    description: "Name of the freeze controller to activate on safety violation"
+
+  latching_mode:
+    type: bool
+    default_value: true
+    description: "If true, stay frozen after violation until manually released. If false, allow auto-recovery when safe."
+
+  status_publish_rate:
+    type: double
+    default_value: 10.0
+    description: "Rate (Hz) to publish safety status messages"
+
+  # Workspace constraints (Cartesian limits)
+  check_workspace:
+    type: bool
+    default_value: false
+    description: "Enable workspace (Cartesian) limit checking"
+
+  end_effector_frame:
+    type: string
+    default_value: "flange"
+    description: "Name of the end-effector frame to monitor. Use <prefix>flange in config for multi-robot setups"
+
+  workspace_x_min:
+    type: double
+    default_value: -1.0
+    description: "Minimum allowed X position (m) in base frame"
+
+  workspace_x_max:
+    type: double
+    default_value: 1.0
+    description: "Maximum allowed X position (m) in base frame"
+
+  workspace_y_min:
+    type: double
+    default_value: -1.0
+    description: "Minimum allowed Y position (m) in base frame"
+
+  workspace_y_max:
+    type: double
+    default_value: 1.0
+    description: "Maximum allowed Y position (m) in base frame"
+
+  workspace_z_min:
+    type: double
+    default_value: 0.0
+    description: "Minimum allowed Z position (m) in base frame (e.g., table height)"
+
+  workspace_z_max:
+    type: double
+    default_value: 2.0
+    description: "Maximum allowed Z position (m) in base frame"

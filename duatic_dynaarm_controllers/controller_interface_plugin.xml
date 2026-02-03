@@ -48,4 +48,12 @@
     </description>
   </class>
 
+  <class name="duatic_dynaarm_controllers/SafetyMonitorController"
+         type="duatic_dynaarm_controllers::SafetyMonitorController"
+         base_class_type="controller_interface::ControllerInterface">
+    <description>
+      Safety monitor that checks joint limits and triggers freeze controller on violations.
+    </description>
+  </class>
+
 </library>
